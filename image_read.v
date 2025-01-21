@@ -237,6 +237,9 @@ always @(*) begin
 			DATA_B1=0;
 		end		
 		`endif
+		// SHARPEN IMAGE OPERATION
+		`ifdef SHARPEN_IMAGE
+
 		
 	end
 end
