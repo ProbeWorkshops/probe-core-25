@@ -3,6 +3,7 @@
 
 // Choose the operation of code by delete // in the beginning of the selected line
 
+//`define SHARPEN_OPERATION
 `define BRIGHTNESS_OPERATION
 //`define INVERT_OPERATION
 //`define THRESHOLD_OPERATION 
