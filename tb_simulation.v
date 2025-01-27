@@ -15,6 +15,7 @@ wire [ 7 : 0] data_R1;
 wire [ 7 : 0] data_G1;
 wire [ 7 : 0] data_B1;
 wire enc_done;
+wire write_done;
 
 //-------------------------------------------------
 // Components
@@ -49,7 +50,7 @@ image_write
    .DATA_WRITE_R1(data_R1),
    .DATA_WRITE_G1(data_G1),
    .DATA_WRITE_B1(data_B1),
-	.Write_Done()
+	.Write_Done(write_done)
 );	
 
 //-------------------------------------------------
@@ -65,5 +66,9 @@ initial begin
     #25 HRESETn = 1;
 end
 
-
+    always@(negedge HCLK) begin
+        if(write_done) begin
+            $finish;
+        end
+    end
 endmodule
