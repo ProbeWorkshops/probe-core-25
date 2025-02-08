@@ -12,6 +12,7 @@
 </pre>
 
 ## workshop flow
+```
 start>
     |
     |
@@ -36,3 +37,4 @@ tharunish:  3_1_tharunish       - code blocks added for mask, background reading
     |
     |
 End>        3_3_tharunish = entire project
+```
