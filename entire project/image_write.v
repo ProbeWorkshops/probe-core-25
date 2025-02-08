@@ -1,13 +1,13 @@
 module image_write
-#(parameter WIDTH 	= 512,							// Image width
-			HEIGHT 	= 512,								// Image height
-			INFILE  = "output.bmp",						// Output image
-			BMP_HEADER_NUM = 54							// Header for bmp image
+#(parameter WIDTH 	= 512,							// Image width is 512 pixels
+			HEIGHT 	= 512,							// Image height is 512 pixels
+			INFILE  = "output.bmp",					// Output image
+			BMP_HEADER_NUM = 54						// Header for bmp image
 )
 (
-	input HCLK,												// Clock	
-	input HRESETn,											// Reset active low
-	input data_write,											// Hsync pulse						
+	input HCLK,										// Clock	
+	input HRESETn,									// Reset active low
+	input data_write,								// data will be written if high					
     input [7:0]  DATA_WRITE_R0,						// Red 8-bit data (odd)
     input [7:0]  DATA_WRITE_G0,						// Green 8-bit data (odd)
     input [7:0]  DATA_WRITE_B0,						// Blue 8-bit data (odd)
@@ -16,14 +16,15 @@ module image_write
     input [7:0]  DATA_WRITE_B1,						// Blue 8-bit data (even)
 	output 	reg	 Write_Done
 );	
-integer BMP_header [0 : BMP_HEADER_NUM - 1];		// BMP header
-reg [7:0] out_BMP  [0 : WIDTH*HEIGHT*3 - 1];		// Temporary memory for image
-reg [18:0] data_count;									// Counting data
-wire done;													// done flag
+integer BMP_header  [0 : BMP_HEADER_NUM - 1];		// BMP header
+reg [7:0 ] out_BMP  [0 : WIDTH*HEIGHT*3 - 1];		// Temporary memory for image
+reg [18:0] data_count;								// Counting data
+wire       done;									// done flag
 // counting variables
 integer i;
 integer k, l, m;
 integer fd; 
+//--------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------//
 //-------Header data for bmp image--------------------------//
 //----------------------------------------------------------//
@@ -59,6 +60,7 @@ initial begin
 	BMP_header[26] =  1;
 	BMP_header[27] =  0;
 end
+//--------------------------------------------------------------------------------------------------------------
 // row and column counting for temporary memory of image 
 always@(posedge HCLK, negedge HRESETn) begin
     if(!HRESETn) begin
@@ -75,6 +77,7 @@ always@(posedge HCLK, negedge HRESETn) begin
         end
     end
 end
+//--------------------------------------------------------------------------------------------------------------
 // Writing RGB888 even and odd data to the temp memory
 always@(posedge HCLK, negedge HRESETn) begin
     if(!HRESETn) begin
@@ -92,6 +95,7 @@ always@(posedge HCLK, negedge HRESETn) begin
         end
     end
 end
+//--------------------------------------------------------------------------------------------------------------
 // data counting
 always@(posedge HCLK, negedge HRESETn)
 begin
@@ -104,6 +108,8 @@ begin
     end
 end
 assign done = (data_count == 131071)? 1'b1: 1'b0; // done flag once all pixels were processed
+//--------------------------------------------------------------------------------------------------------------
+//clear write done variable if reset is pressed
 always@(posedge HCLK, negedge HRESETn)
 begin
     if(~HRESETn) begin
@@ -113,18 +119,18 @@ begin
 		Write_Done <= done;
     end
 end
-//---------------------------------------------------------//
-//--------------Write .bmp file		----------------------//
+//--------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------//
+//--------------Write .bmp file		------------------------//
 //----------------------------------------------------------//
 initial begin
-    fd = $fopen(INFILE, "wb+");
+    fd = $fopen(INFILE, "wb+"); // creating a new file to write data
 end
 always@(Write_Done) begin // once the processing was done, bmp image will be created
     if(Write_Done == 1'b1) begin
         for(i=0; i<BMP_HEADER_NUM; i=i+1) begin
             $fwrite(fd, "%c", BMP_header[i][7:0]); // write the header
         end
-        
         for(i=0; i<WIDTH*HEIGHT*3; i=i+6) begin
 		// write R0B0G0 and R1B1G1 (6 bytes) in a loop
             $fwrite(fd, "%c", out_BMP[i  ][7:0]);
