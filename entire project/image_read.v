@@ -289,6 +289,7 @@ always @(*) begin
 				/**************************************/		
 				/*		BRIGHTNESS ADDITION OPERATION */
 				/**************************************/
+				// new pixel value = old pixel value + brightness value
 				if (org_R[WIDTH * row + col   ] + VALUE > 255)
 					processed_R0 = 255;
 				else
@@ -323,6 +324,7 @@ always @(*) begin
 				/**************************************/		
 				/*	BRIGHTNESS SUBTRACTION OPERATION  */
 				/**************************************/
+				// new pixel value = old pixel value - brightness value
 				if (org_R[WIDTH * row + col   ] - VALUE < 0)
 					processed_R0 = 0;
 				else
@@ -358,6 +360,7 @@ always @(*) begin
 		/**************************************/		
 		/*		INVERT_OPERATION  			  */
 		/**************************************/
+		// new pixel value = 255-(average of R G B)
 		if(operation==INVERT_OPERATION) begin
 			value2 = (org_B[WIDTH * row + col  ] + org_R[WIDTH * row + col  ] +org_G[WIDTH * row + col  ])/3;
 			processed_R0=255-value2;
@@ -373,6 +376,7 @@ always @(*) begin
 		/**************************************/		
 		/********THRESHOLD OPERATION  *********/
 		/**************************************/
+		// new pixel value = 0(if <threshold value) or 255(if >threshold value)
 		if(operation==THRESHOLD_OPERATION) begin
 			THRESHOLD=read_value;
 
@@ -404,6 +408,7 @@ always @(*) begin
 		/**************************************/		
 		/******** CONTRAST OPERATION  *********/
 		/**************************************/
+		// new pixel value = [(old pixel value - 128) x contrast value] + 128
 		if(operation==CONTRAST_OPERATION) begin
 			ALPHA=read_value;
 
@@ -437,6 +442,7 @@ always @(*) begin
 		/**************************************/		
 		/********    GAUSSIAN BLUR    *********/
 		/**************************************/
+		// new pixel value is the convolution of gaussian kernel with the neighbouring pixels
 		if(operation==GAUSSIAN_BLUR_OPERATION) begin
 			value=row<7?-row:-7;
 			value1=row<HEIGHT-7?7:HEIGHT-row;
@@ -469,6 +475,7 @@ always @(*) begin
 		/**************************************/		
 		/********     BACK GROUND     *********/
 		/**************************************/
+		//new pixel value = pixel value of the background image
 		if(operation==BACK_GROUND_OPERATION) begin
 			processed_R0 = org_RB[WIDTH*(row)+ (col)];
 			processed_G0 = org_GB[WIDTH*(row)+ (col)];
@@ -481,6 +488,7 @@ always @(*) begin
 		/**************************************/		
 		/********  FULL IMAGE EDIT    *********/
 		/**************************************/
+		// for full image to be processed, write the processed pixel value every time
 		if(workflow==FULL_EDIT) begin
 			DATA_R0=processed_R0;
 			DATA_R1=processed_R1;
@@ -493,6 +501,7 @@ always @(*) begin
 		/**************************************/		
 		/********   SUBJECT SELECTION *********/
 		/**************************************/
+		// for only the background to be processed, write the processed pixel value only if it is a background pixel
 		if(workflow==SUBJECT_SEL) begin
 			DATA_R0=(org_M[WIDTH*row+col  ])?org_R[WIDTH*(row)+ (col)  ]:processed_R0;
 			DATA_R1=(org_M[WIDTH*row+col+1])?org_R[WIDTH*(row)+ (col+1)]:processed_R1;
